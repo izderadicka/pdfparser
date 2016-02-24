@@ -203,9 +203,15 @@ cdef class Block:
     cdef:
         TextBlock *block
         TextLine *curr_line
+        
     def __cinit__(self, Flow flow):
         self.block= flow.curr_block
         self.curr_line=self.block.getLines()
+        
+#TODO - do we need to delete blocks, lines ... or are they destroyed with page?        
+#     def __dealloc__(self):
+#         if self.block != NULL:
+#             del self.block
         
     def __iter__(self):
         return self
@@ -222,7 +228,7 @@ cdef class Block:
         def __get__(self):
             cdef double x1,y1,x2,y2
             self.block.getBBox(&x1, &y1, &x2, &y2)
-            return  x1,y1,x2,y2
+            return  BBox(x1,y1,x2,y2)
         
 cdef class BBox:
     cdef double x1, y1, x2, y2
@@ -235,6 +241,17 @@ cdef class BBox:
         
     def as_tuple(self):
         return self.x1,self.y1, self.x2, self.y2
+    
+    def __getitem__(self, i):
+        if i==0:
+            return self.x1,
+        elif i==1:
+            return self.y1
+        elif i==2:
+            return self.x2
+        elif i==3:
+            return self.y2
+        raise IndexError()
         
     property x1:
         def __get__(self):
@@ -474,7 +491,7 @@ cdef class Line:
         
     property bbox:
         def __get__(self):
-            return self.x1,self.y1,self.x2,self.y2
+            return BBox(self.x1,self.y1,self.x2,self.y2)
         
     property text:
         def __get__(self):

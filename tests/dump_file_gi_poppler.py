@@ -46,7 +46,7 @@ def main():
     d=Poppler.Document.new_from_file('file:'+path)
     n=d.get_n_pages()
     for pg_no in range(n):
-        p=d.get_page(0)
+        p=d.get_page(pg_no)
         print 'Page %d' % (pg_no+1), 'size ', p.get_size()
         text=p.get_text().decode('UTF-8')
         locs=get_page_layout(p)
