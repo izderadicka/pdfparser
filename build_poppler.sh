@@ -1,6 +1,6 @@
 #!/bin/sh
 
-sudo apt-get install libtool pkg-config gettext fontconfig  apt-get libfontconfig1-dev autoconf libzip-dev libtiff5-dev
+sudo apt-get install libtool pkg-config gettext fontconfig libfontconfig1-dev autoconf libzip-dev libtiff5-dev libopenjpeg-dev
 git clone --depth 1 git://git.freedesktop.org/git/poppler/poppler poppler_src 
 cd poppler_src/
 ./autogen.sh

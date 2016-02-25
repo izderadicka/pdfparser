@@ -8,7 +8,7 @@ except ImportError:
     print('You need to install cython first - sudo pip install cython', file=sys.stderr)
     sys.exit(1)
 
-POPPLER_ROOT=os.path.join(os.path.dirname(__file__), 'poppler_src')
+POPPLER_ROOT=os.environ.get('POPPLER_ROOT',os.path.join(os.path.dirname(__file__), 'poppler_src'))
 POPPLER_LIB_DIR= os.path.join(POPPLER_ROOT, 'poppler/.libs/')
 
 poppler_ext=Extension('pdfparser.poppler', ['pdfparser/poppler.pyx'], language='c++',
