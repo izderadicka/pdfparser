@@ -1,5 +1,5 @@
 from __future__ import print_function
-from setuptools import setup, Extension
+from distutils.core import setup, Extension
 import os,sys
 try:
     from Cython.Build import cythonize
