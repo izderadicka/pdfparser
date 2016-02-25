@@ -19,5 +19,5 @@ poppler_ext=Extension('pdfparser.poppler', ['pdfparser/poppler.pyx'], language='
                       libraries=['poppler']) #,  define_macros, undef_macros, library_dirs, libraries, runtime_library_dirs, extra_objects, , extra_link_args, export_symbols, swig_opts, depends
 setup(name = 'pdfparser',
       version = '0.1',
-      
+      packages=['pdfparser'],
       ext_modules=cythonize(poppler_ext))
