@@ -17,5 +17,7 @@ poppler_ext=Extension('pdfparser.poppler', ['pdfparser/poppler.pyx'], language='
                       library_dirs=[POPPLER_LIB_DIR],
                       runtime_library_dirs=['$ORIGIN'],
                       libraries=['poppler']) #,  define_macros, undef_macros, library_dirs, libraries, runtime_library_dirs, extra_objects, , extra_link_args, export_symbols, swig_opts, depends
-setup(name = 'Hello world app',
+setup(name = 'pdfparser',
+      version = '0.1',
+      
       ext_modules=cythonize(poppler_ext))
