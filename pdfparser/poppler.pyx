@@ -244,7 +244,7 @@ cdef class BBox:
     
     def __getitem__(self, i):
         if i==0:
-            return self.x1,
+            return self.x1
         elif i==1:
             return self.y1
         elif i==2:
