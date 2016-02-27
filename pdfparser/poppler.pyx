@@ -140,22 +140,21 @@ cdef class Document:
 cdef class Page:
     cdef:
         int page_no
-        TextOutputDev *dev
         TextPage *page
         Document doc
         TextFlow *curr_flow
         
     def __cinit__(self, int page_no, Document doc):
+        cdef TextOutputDev *dev
         self.page_no=page_no
-        self.dev = new TextOutputDev(NULL, False, 0.0, False, False);
-        doc.render_page(page_no, <OutputDev*> self.dev)
-        self.page= self.dev.takeText()
+        dev = new TextOutputDev(NULL, False, 0.0, False, False);
+        doc.render_page(page_no, <OutputDev*> dev)
+        self.page= dev.takeText()
+        del dev
         self.curr_flow = self.page.getFlows()
         self.doc=doc
     
     def __dealloc__(self):
-        if self.dev != NULL:
-            del self.dev
         if self.page != NULL:
             self.page.decRefCnt()
             
