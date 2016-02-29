@@ -1,4 +1,5 @@
 from libcpp cimport bool
+from cpython cimport bool as PyBool
 from cpython.object cimport Py_EQ, Py_NE
 
 ctypedef bool GBool
@@ -102,9 +103,13 @@ cdef class Document:
     cdef: 
         PDFDoc *_doc
         int _pg
-    def __cinit__(self, char *fname):
+        PyBool phys_layout
+        double fixed_pitch
+    def __cinit__(self, char *fname, PyBool phys_layout=False, double fixed_pitch=0):
         self._doc=PDFDocFactory().createPDFDoc(GooString(fname))
         self._pg=0
+        self.phys_layout=phys_layout
+        self.fixed_pitch=fixed_pitch
         
     def __dealloc__(self):
         if self._doc != NULL:
@@ -147,7 +152,7 @@ cdef class Page:
     def __cinit__(self, int page_no, Document doc):
         cdef TextOutputDev *dev
         self.page_no=page_no
-        dev = new TextOutputDev(NULL, False, 0.0, False, False);
+        dev = new TextOutputDev(NULL, doc.phys_layout, doc.fixed_pitch, False, False);
         doc.render_page(page_no, <OutputDev*> dev)
         self.page= dev.takeText()
         del dev
