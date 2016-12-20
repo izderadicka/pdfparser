@@ -51,11 +51,13 @@ cdef extern from "TextOutputDev.h":
         TextOutputDev(char *fileName, GBool physLayoutA,
         double fixedPitchA, GBool rawOrderA, GBool append)
         TextPage *takeText()
+        TextWordList *makeWordList()
         
     cdef cppclass TextPage:
         void incRefCnt()
         void decRefCnt()
         TextFlow *getFlows()
+        TextWordList *makeWordList(GBool physLayout)
         
     cdef cppclass TextFlow:
         TextFlow *getNext()
@@ -69,7 +71,12 @@ cdef extern from "TextOutputDev.h":
     cdef cppclass TextLine:
         TextWord *getWords()
         TextLine *getNext()
-        
+
+    cdef cppclass TextWordList:
+        TextWordList(TextPage *text, GBool physLayout)
+        int getLength()
+        TextWord *get(int idx)
+
     cdef cppclass TextWord:
         TextWord *getNext()
         int getLength()
@@ -87,6 +94,7 @@ cdef extern from "TextOutputDev.h":
         GooString *getFontName() 
         double getAscent();
         double getDescent();
+        int getWMode()
 
         GBool isFixedWidth() 
         GBool isSerif() 
@@ -104,11 +112,13 @@ cdef class Document:
         PDFDoc *_doc
         int _pg
         PyBool phys_layout
+        PyBool raw_order
         double fixed_pitch
-    def __cinit__(self, char *fname, PyBool phys_layout=False, double fixed_pitch=0):
+    def __cinit__(self, char *fname, PyBool raw_order=False, PyBool phys_layout=False, double fixed_pitch=0):
         self._doc=PDFDocFactory().createPDFDoc(GooString(fname))
         self._pg=0
         self.phys_layout=phys_layout
+        self.raw_order=raw_order
         self.fixed_pitch=fixed_pitch
         
     def __dealloc__(self):
@@ -132,7 +142,7 @@ cdef class Document:
         return self
     
     def get_page(self, int pg):
-        return Page(pg, self)
+        return Page(pg, self, self.raw_order)
     
     def __next__(self):
         if self._pg >= self.no_of_pages:
@@ -149,10 +159,10 @@ cdef class Page:
         Document doc
         TextFlow *curr_flow
         
-    def __cinit__(self, int page_no, Document doc):
+    def __cinit__(self, int page_no, Document doc, bool raw_order=False):
         cdef TextOutputDev *dev
         self.page_no=page_no
-        dev = new TextOutputDev(NULL, doc.phys_layout, doc.fixed_pitch, False, False);
+        dev = new TextOutputDev(NULL, doc.phys_layout, doc.fixed_pitch, raw_order, False);
         doc.render_page(page_no, <OutputDev*> dev)
         self.page= dev.takeText()
         del dev
@@ -182,7 +192,12 @@ cdef class Page:
         """Size of page as (width, height)"""
         def __get__(self):
             return self.doc.get_page_size(self.page_no)
-        
+
+    property wordlist:
+        def __get__(self):
+            return WordList(self)
+
+
 cdef class Flow:
     cdef: 
         TextFlow *flow
@@ -326,12 +341,14 @@ cdef class FontInfo:
         unicode name
         double size
         Color color
+        int wmode
         
-    def __cinit__(self, unicode name, double size, Color color):
+    def __cinit__(self, unicode name, double size, Color color, int wmode=0):
         nparts=name.split('+',1)
         self.name=nparts[-1]
         self.size=size
         self.color=color
+        self.wmode = wmode
         
     property name:
         def __get__(self):
@@ -350,7 +367,11 @@ cdef class FontInfo:
             return self.color
         def __set__(self, Color val):
             self.color=val
-            
+
+    property wmode:
+        def __get__(self):
+            return self.wmode
+
     def __richcmp__(x, y, op):
         if isinstance(x, FontInfo) and isinstance(y, FontInfo) and (op == Py_EQ or op == Py_NE):
             eq = x.name == y.name and \
@@ -508,10 +529,74 @@ cdef class Line:
     property char_fonts:
         def __get__(self):
             return self._fonts
-            
-        
-    
-        
-    
-    
-    
+
+
+cdef class WordList:
+    cdef:
+        TextWordList *wordlist
+        unicode _text
+        list _bboxes
+        CompactList _fonts
+
+    def __cinit__(self, Page page):
+        self.wordlist = page.page.makeWordList(False)
+
+    def __init__(self, Page page):
+        self._text=u''
+        self._bboxes=[]
+        self._fonts=CompactList()
+        self._get_text()
+        assert len(self._text) == len(self._bboxes)
+
+    def _get_text(self):
+        cdef:
+            TextWord *w
+            GooString *s
+            double bx1,bx2, by1, by2
+            list words = []
+            int i, j, wlen
+            BBox last_bbox
+            FontInfo last_font
+            double r,g,b
+
+        for j in range(self.wordlist.getLength()):
+            w=self.wordlist.get(j)
+            wlen=w.getLength()
+            assert wlen>0
+            # gets bounding boxes for all characters
+            # and font info
+            for i in range(wlen):
+                w.getCharBBox(i, &bx1, &by1, &bx2, &by2 )
+                last_bbox=BBox(bx1, by1, bx2, by2)
+                # if previous word is space update it's right end
+                if i == 0 and words and words[-1] == u' ':
+                    self._bboxes[-1].x2 = last_bbox.x1
+
+                self._bboxes.append(last_bbox)
+                w.getColor(&r, &g, &b)
+                last_font=FontInfo(w.getFontName(i).getCString().decode('UTF-8'),
+                                   w.getFontSize(),
+                                   Color(r,g,b),
+                                   w.getFontInfo(i).getWMode(),
+                                   )
+                self._fonts.append(last_font)
+            #and then text as UTF-8 bytes
+            s=w.getText()
+            #print s.getCString(), w.getLength(), len(s.getCString())
+            words.append(s.getCString().decode('UTF-8')) # decoded to python unicode string
+            del s
+            # must have same ammount of bboxes and characters in word
+            assert len(words[-1]) == wlen
+        self._text= u''.join(words)
+
+    property text:
+        def __get__(self):
+            return self._text
+
+    property char_bboxes:
+        def __get__(self):
+            return self._bboxes
+
+    property char_fonts:
+        def __get__(self):
+            return self._fonts
