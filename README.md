@@ -9,4 +9,4 @@ make install
 ldconfig
 ```
 
-Available under GPL v3 license (libpoppler is also GPL).
+Available under GPL v3 or any later version license (libpoppler is also GPL).
