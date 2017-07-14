@@ -73,7 +73,8 @@ python tests/dump_file.py test_docs/test1.pdf
 ### Debian like -  system wide libpoppler 
 ```
 sudo apt-get update
-sudo apt-get install libpoppler libpoppler-private-dev
+sudo apt-get install -y libpoppler-private-dev
+pip install cython
 pip install git+https://github.com/izderadicka/pdfparser
 ```
     
