@@ -1,4 +1,5 @@
-#pdfparser#
+pdfparser
+---------
 
 Python binding for libpoppler - focused on text extration from PDF documents.
 
