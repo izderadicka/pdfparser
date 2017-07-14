@@ -88,7 +88,8 @@ target/
 # pyenv
 .python-version
 
-
+# pycharm
+.idea
 
 ### C++ ###
 # Compiled Object files
