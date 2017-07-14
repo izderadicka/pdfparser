@@ -78,7 +78,7 @@ else:
 
 
 setup(name='pdfparser',
-      version='0.1',
+      version='0.1.1',
       classifiers=[
           # How mature is this project? Common values are
           #   3 - Alpha
@@ -104,4 +104,6 @@ setup(name='pdfparser',
       packages=['pdfparser', ],
       package_data=package_data,
       include_package_data=True,
-      ext_modules=cythonize(poppler_ext))
+      ext_modules=cythonize(poppler_ext),
+      zip_safe=False
+      )

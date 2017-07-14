@@ -1,13 +1,20 @@
-Binding for libpoppler - focus on text extration from PDF documents.
-Also comparison with other approaches - pdfminer and GObject Introspection binding for libpoppler.
+#pdfparser#
 
-Requires recent libpoppler >= 0.40 - so it's recommended to compile it from source. 
-Use script build_poppler.sh to clone and build.
-To install system wise:
-```
-make install
-ldconfig
-```
+Python binding for libpoppler - focused on text extration from PDF documents.
+
+Intended as an easy to use replacemnt for [pdfminer](https://github.com/euske/pdfminer), 
+which provides much better perfomance (see below for short comparison) and is Python3 compatible.
+
+See this [article](http://zderadicka.eu/parsing-pdf-for-fun-and-profit-indeed-in-python/)
+for some comparisons with pdfminer and other approaches. 
+
+
+Binding is written in [cython](http://cython.org/).
+
+Requires recent libpoppler >= 0.40 - so I'd recommend to build it from source to get latest library, 
+but it works also with recent libpoppler library present in common linux distributions (then it requires 
+dev package to build). See below for installation instructions.
+
 
 Available under GPL v3 or any later version license (libpoppler is also GPL).
 
@@ -15,7 +22,7 @@ Available under GPL v3 or any later version license (libpoppler is also GPL).
 
 Below or some instructions to install this package
 
-### CentOS 7 - pkg-config method
+### CentOS 7 - system-wide libpoppler (pkg-config method)
 
 Install the poppler-devel package (Tested with version 0.26.5-16.el7)
 
@@ -47,30 +54,37 @@ Clone the poppler repo and install (similar to build_poppler.sh)
     make
     cp poppler/.libs/libpoppler.so.?? ../pdfparser/
     cd ..
-    python setup.py install
+    POPPLER_ROOT=poppler_src python setup.py install
     
  
- ### Debian - self compiled method
+### Debian like - self compiled method
  
-    sh build_poppler.sh
-    cd ..
-    python setup.py install
+```
+git clone --depth 1 https://github.com/izderadicka/pdfparser.git
+cd pdfparser
+./build_poppler.sh
+pip install cython
+POPPLER_ROOT=poppler_src ./setup.py install
+#test that it works
+python tests/dump_file.py test_docs/test1.pdf
+```
+
+### Debian like -  system wide libpoppler 
+```
+sudo apt-get update
+sudo apt-get install libpoppler libpoppler-private-dev
+pip install git+https://github.com/izderadicka/pdfparser
+```
     
-
-
-
 
 ## Speed comparisons
 
-http://zderadicka.eu/parsing-pdf-for-fun-and-profit-indeed-in-python/
-
-
-|                             | pdfreader     | pdfminer      |
-| --------------------------- | ------------- | ------------- |
-| tiny document (half page)   | 0.033s        | 0.121s        |
-| small document (5 pages)    | 0.141s        | 0.810s        |
-| medium document (55 pages)  | 1.166s        | 10.524s       |
-| large document (436 pages)  | 10.581s       | 108.095s      |
+|                             | pdfreader     | pdfminer      |speed-up factor|
+| --------------------------- | ------------- | ------------- |---------------|
+| tiny document (half page)   | 0.033s        | 0.121s        | 3.6 x         |
+| small document (5 pages)    | 0.141s        | 0.810s        | 5.7 x         |
+| medium document (55 pages)  | 1.166s        | 10.524s       | 9.0 x         |       
+| large document (436 pages)  | 10.581s       | 108.095s      | 10.2 x        |
 
 
 pdfparser code used in test
