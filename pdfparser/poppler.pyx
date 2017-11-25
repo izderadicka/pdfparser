@@ -462,9 +462,10 @@ cdef class Line:
                     self._bboxes[-1].x2=last_bbox.x1
                     
                 self._bboxes.append(last_bbox)
-                #w.getColor(&r, &g, &b)
+                w.getColor(&r, &g, &b)
+                font_info = w.getFontInfo(i)
                 last_font=FontInfo(u"unknown", #w.getFontName(i).getCString().decode('UTF-8'),
-                                   8,#w.getFontSize(),
+                                   w.getFontSize(),
                                    Color(r,g,b)
                                    )
                 self._fonts.append(last_font)
