@@ -121,3 +121,5 @@ target/
 *.out
 *.app
 .~lock*
+
+pdfparser/*.so.*

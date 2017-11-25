@@ -446,7 +446,7 @@ cdef class Line:
             int offset = 0, i, wlen
             BBox last_bbox 
             FontInfo last_font
-            double r,g,b
+            double r=0,g=0,b=0
         
         w=self.line.getWords()
         while w:
@@ -462,9 +462,9 @@ cdef class Line:
                     self._bboxes[-1].x2=last_bbox.x1
                     
                 self._bboxes.append(last_bbox)
-                w.getColor(&r, &g, &b)
-                last_font=FontInfo(w.getFontName(i).getCString().decode('UTF-8'),
-                                   w.getFontSize(),
+                #w.getColor(&r, &g, &b)
+                last_font=FontInfo(u"unknown", #w.getFontName(i).getCString().decode('UTF-8'),
+                                   8,#w.getFontSize(),
                                    Color(r,g,b)
                                    )
                 self._fonts.append(last_font)
