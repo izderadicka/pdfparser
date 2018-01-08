@@ -1,8 +1,9 @@
-/poppler_src/
+/poppler_src
 /.project
 /.pydevproject
 /.externalToolBuilders/
 /build/
+/pdfparser/libpoppler*
 
 ### Linux ###
 *~

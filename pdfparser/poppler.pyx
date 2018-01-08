@@ -1,15 +1,22 @@
 from libcpp cimport bool
+from libcpp.string cimport string
 from cpython cimport bool as PyBool
 from cpython.object cimport Py_EQ, Py_NE
 
 ctypedef bool GBool
 DEF PRECISION=1e-6
 
+cdef extern from "cpp/poppler-version.h" namespace "poppler":
+    cdef string version_string()
+    
+def poppler_version():
+    return version_string()
+
 cdef extern from "GlobalParams.h":
     GlobalParams *globalParams
     cdef cppclass GlobalParams:
         pass
- # we need to init globalParams - just one during program run
+ # we need to init globalParams - just once during program run
 globalParams = new GlobalParams()
 
 cdef extern from "goo/GooString.h":
@@ -463,7 +470,7 @@ cdef class Line:
                     
                 self._bboxes.append(last_bbox)
                 w.getColor(&r, &g, &b)
-                last_font=FontInfo(w.getFontName(i).getCString().decode('UTF-8'),
+                last_font=FontInfo(w.getFontName(i).getCString().decode('UTF-8', 'replace'), # In rare cases font name is not UTF-8
                                    w.getFontSize(),
                                    Color(r,g,b)
                                    )
