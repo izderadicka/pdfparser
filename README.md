@@ -1,10 +1,10 @@
 pdfparser
 ---------
 
-Python binding for libpoppler - focused on text extration from PDF documents.
+Python binding for libpoppler - focused on text extraction from PDF documents.
 
-Intended as an easy to use replacemnt for [pdfminer](https://github.com/euske/pdfminer), 
-which provides much better perfomance (see below for short comparison) and is Python3 compatible.
+Intended as an easy to use replacement for [pdfminer](https://github.com/euske/pdfminer), 
+which provides much better performance (see below for short comparison) and is Python3 compatible.
 
 See this [article](http://zderadicka.eu/parsing-pdf-for-fun-and-profit-indeed-in-python/)
 for some comparisons with pdfminer and other approaches. 
