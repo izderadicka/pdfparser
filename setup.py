@@ -62,11 +62,13 @@ def pkgconfig(*packages, **kw):
             config.setdefault(distutils_key, []).extend([i[n:] for i in items])
     return config
 
+# Mac OS build fix:
+mac_compile_args = ["-std=c++11", "-stdlib=libc++", "-mmacosx-version-min=10.7"]
 POPPLER_ROOT = os.environ.get('POPPLER_ROOT', None)
 if POPPLER_ROOT:
     POPPLER_CPP_LIB_DIR = os.path.join(POPPLER_ROOT, 'cpp/')
     poppler_ext = Extension('pdfparser.poppler', ['pdfparser/poppler.pyx'], language='c++',
-                            extra_compile_args=["-std=c++11"],
+                            extra_compile_args=mac_compile_args if sys.platform == 'darwin' else ["-std=c++11"],
                             include_dirs=[POPPLER_ROOT, os.path.join(POPPLER_ROOT, 'poppler')],
                             library_dirs=[POPPLER_ROOT, POPPLER_CPP_LIB_DIR],
                             runtime_library_dirs=['$ORIGIN'],
@@ -74,12 +76,15 @@ if POPPLER_ROOT:
     package_data = {'pdfparser': ['*.so.*', 'pdfparser/*.so.*']}
 else:
     poppler_config = pkgconfig("poppler", "poppler-cpp")
+    # Mac OS build fix:
+    if sys.platform == 'darwin':
+        poppler_config.setdefault('extra_compile_args', []).extend(mac_compile_args)
     poppler_ext = Extension('pdfparser.poppler', ['pdfparser/poppler.pyx'], language='c++', **poppler_config)
     package_data = {}
 
 # get version from package
 pkg_file= os.path.join(os.path.split(__file__)[0], 'pdfparser', '__init__.py')
-m=re.search(r"__version__\s*=\s*'([\d.]+)'", file(pkg_file).read())
+m=re.search(r"__version__\s*=\s*'([\d.]+)'", open(pkg_file).read())
 if not m:
     print >>sys.stderr, 'Cannot find version of package'
     sys.exit(1)
@@ -112,6 +117,6 @@ setup(name='pdfparser',
       packages=['pdfparser', ],
       package_data=package_data,
       include_package_data=True,
-      ext_modules=cythonize(poppler_ext),
+      ext_modules=cythonize([poppler_ext]), # a workaround since Extension is an old-style class
       zip_safe=False
       )
