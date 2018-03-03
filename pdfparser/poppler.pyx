@@ -470,7 +470,8 @@ cdef class Line:
                     
                 self._bboxes.append(last_bbox)
                 w.getColor(&r, &g, &b)
-                last_font=FontInfo(w.getFontName(i).getCString().decode('UTF-8', 'replace'), # In rare cases font name is not UTF-8
+                font_name=w.getFontName(i)
+                last_font=FontInfo(font_name.getCString().decode('UTF-8', 'replace') if <unsigned long>font_name != 0 else u"unknown", # In rare cases font name is not UTF-8 or font name is NULL
                                    w.getFontSize(),
                                    Color(r,g,b)
                                    )
