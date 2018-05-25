@@ -83,7 +83,30 @@ pip install git+https://github.com/izderadicka/pdfparser
 pip install cython
 pip install git+https://github.com/izderadicka/pdfparser
 ```
-    
+
+## Usage
+
+See `tests/dump_file.py` for available arguments and some basic example.
+```
+usage: dump_file.py [-h] [--char-details] [-f FIRST_PAGE] [-l LAST_PAGE]
+                    [--phys-layout] [--fixed-pitch FIXED_PITCH] [-q]
+                    document
+
+positional arguments:
+  document              Document file
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --char-details        print character details
+  -f FIRST_PAGE, --first-page FIRST_PAGE
+                        first page
+  -l LAST_PAGE, --last-page LAST_PAGE
+                        first page
+  --phys-layout         Physical Layout - param for text analysis
+  --fixed-pitch FIXED_PITCH
+                        Fixed pitch - param for text analysis - app. max space size
+  -q, --quiet           Silence all output from poppler
+```
 
 ## Speed comparisons
 
