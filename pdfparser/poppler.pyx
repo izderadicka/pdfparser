@@ -15,7 +15,8 @@ def poppler_version():
 cdef extern from "GlobalParams.h":
     GlobalParams *globalParams
     cdef cppclass GlobalParams:
-        pass
+        void setErrQuiet(bool)
+        bool getErrQuiet()
  # we need to init globalParams - just once during program run
 globalParams = new GlobalParams()
 
@@ -112,11 +113,14 @@ cdef class Document:
         int _pg
         PyBool phys_layout
         double fixed_pitch
-    def __cinit__(self, char *fname, PyBool phys_layout=False, double fixed_pitch=0):
+    def __cinit__(self, char *fname, PyBool phys_layout=False, double fixed_pitch=0, PyBool quiet=False):
         self._doc=PDFDocFactory().createPDFDoc(GooString(fname))
         self._pg=0
         self.phys_layout=phys_layout
         self.fixed_pitch=fixed_pitch
+
+        if quiet:
+            globalParams.setErrQuiet(True)
         
     def __dealloc__(self):
         if self._doc != NULL:
