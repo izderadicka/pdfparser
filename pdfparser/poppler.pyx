@@ -15,7 +15,8 @@ def poppler_version():
 cdef extern from "GlobalParams.h":
     GlobalParams *globalParams
     cdef cppclass GlobalParams:
-        pass
+        void setErrQuiet(bool)
+        bool getErrQuiet()
  # we need to init globalParams - just once during program run
 globalParams = new GlobalParams()
 
@@ -112,11 +113,14 @@ cdef class Document:
         int _pg
         PyBool phys_layout
         double fixed_pitch
-    def __cinit__(self, char *fname, PyBool phys_layout=False, double fixed_pitch=0):
+    def __cinit__(self, char *fname, PyBool phys_layout=False, double fixed_pitch=0, PyBool quiet=False):
         self._doc=PDFDocFactory().createPDFDoc(GooString(fname))
         self._pg=0
         self.phys_layout=phys_layout
         self.fixed_pitch=fixed_pitch
+
+        if quiet:
+            globalParams.setErrQuiet(True)
         
     def __dealloc__(self):
         if self._doc != NULL:
@@ -470,7 +474,8 @@ cdef class Line:
                     
                 self._bboxes.append(last_bbox)
                 w.getColor(&r, &g, &b)
-                last_font=FontInfo(w.getFontName(i).getCString().decode('UTF-8', 'replace'), # In rare cases font name is not UTF-8
+                font_name=w.getFontName(i)
+                last_font=FontInfo(font_name.getCString().decode('UTF-8', 'replace') if <unsigned long>font_name != 0 else u"unknown", # In rare cases font name is not UTF-8 or font name is NULL
                                    w.getFontSize(),
                                    Color(r,g,b)
                                    )
