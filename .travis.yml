@@ -19,7 +19,7 @@ before_install:
   
 install:
   - sudo pip install cython
-  - sudo python setup.py 
+  - sudo python setup.py install
 # command to run tests
 script:
   - cd tests
