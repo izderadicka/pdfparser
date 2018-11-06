@@ -24,7 +24,7 @@ cdef extern from "goo/GooString.h":
     cdef cppclass GooString:
         GooString(const char *sA)
         int getLength()
-        char *getCString()
+        const char *getCString()
         char getChar(int i)
 
 cdef extern from "OutputDev.h":
