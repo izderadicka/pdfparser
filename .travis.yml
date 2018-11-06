@@ -23,5 +23,5 @@ install:
 # command to run tests
 script:
   - cd tests
-  - PYTHONPATH=.. python dump_file.py ../test_docs/test1.pdf #| grep "žádným způsobem zasahovat" 
+  - python dump_file.py ../test_docs/test1.pdf #| grep "žádným způsobem zasahovat" 
   
