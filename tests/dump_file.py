@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-
+import pdfparser
 import pdfparser.poppler as pdf
 import argparse
 import sys
