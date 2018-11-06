@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 
 import pdfparser
 import pdfparser.poppler as pdf
@@ -17,20 +18,20 @@ args=p.parse_args()
 d=pdf.Document(args.document, args.phys_layout, args.fixed_pitch, args.quiet)  # @UndefinedVariable
 fp=args.first_page or 1
 lp=args.last_page or d.no_of_pages
-print 'No of pages', d.no_of_pages
+print('No of pages', d.no_of_pages)
 for p in d:
     if p.page_no< fp or p.page_no>lp:
         continue
-    print 'Page', p.page_no, 'size =', p.size
+    print ('Page', p.page_no, 'size =', p.size)
     for f in p:
-        print ' '*1,'Flow'
+        print (' '*1,'Flow')
         for b in f:
-            print ' '*2,'Block', 'bbox=', b.bbox.as_tuple()
+            print (' '*2,'Block', 'bbox=', b.bbox.as_tuple())
             for l in b:
-                print ' '*3, l.text.encode('UTF-8'), '(%0.2f, %0.2f, %0.2f, %0.2f)'% l.bbox.as_tuple()
+                print (' '*3, l.text.encode('UTF-8'), '(%0.2f, %0.2f, %0.2f, %0.2f)'% l.bbox.as_tuple())
                 #assert l.char_fonts.comp_ratio < 1.0
                 if args.char_details:
                     for i in range(len(l.text)):
-                        print l.text[i].encode('UTF-8'), '(%0.2f, %0.2f, %0.2f, %0.2f)'% l.char_bboxes[i].as_tuple(),\
-                            l.char_fonts[i].name, l.char_fonts[i].size, l.char_fonts[i].color,
-                    print
+                        print (l.text[i].encode('UTF-8'), '(%0.2f, %0.2f, %0.2f, %0.2f)'% l.char_bboxes[i].as_tuple(),\
+                            l.char_fonts[i].name, l.char_fonts[i].size, l.char_fonts[i].color, )
+                    print()
