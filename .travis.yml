@@ -1,0 +1,28 @@
+language: python
+dist: trusty
+sudo: false
+python:
+  - "2.7"
+  - "3.5"
+  - "3.6"
+# command to install dependencies
+before_install:
+  - add-apt-repository ppa:george-edison55/cmake-3.x
+  - apt-get update
+  - apt-get install -y libtool pkg-config gettext fontconfig libfontconfig1-dev cmake libzip-dev libjpeg-dev && \
+  - cd /tmp 
+  - git config --global http.sslVerify "false"
+  - git clone --branch poppler-0.62.0 --depth 1 https://anongit.freedesktop.org/git/poppler/poppler.git poppler_src 
+  - cd poppler_src/
+  - cmake -DENABLE_SPLASH=OFF -DENABLE_UTILS=OFF -DENABLE_LIBOPENJPEG=none . 
+  - make && make install
+  - ldconfig
+  
+install:
+  - pip install cython
+  - python setup.py 
+# command to run tests
+script:
+  - cd tests
+  - python dump_file.py ../test_docs/test1.pdf | grep "žádným způsobem zasahovat" 
+  
