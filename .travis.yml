@@ -20,7 +20,7 @@ before_install:
   
 install:
   - pip install cython
-  - POPPLER_ROOT=poppler_src sudo python setup.py build_ext --inplace
+  - POPPLER_ROOT=poppler_src python setup.py build_ext --inplace
 # command to run tests
 script:
   - cd tests
