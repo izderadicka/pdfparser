@@ -1,5 +1,6 @@
-pdfparser
----------
+#pdfparser
+
+[![Build Status](https://travis-ci.org/izderadicka/pdfparser.svg?branch=master)](https://travis-ci.org/izderadicka/pdfparser)
 
 Python binding for libpoppler - focused on text extraction from PDF documents.
 
