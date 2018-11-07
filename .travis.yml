@@ -13,13 +13,14 @@ before_install:
   - git clone --branch poppler-0.62.0 --depth 1 https://anongit.freedesktop.org/git/poppler/poppler.git poppler_src 
   - cd poppler_src/
   - cmake -DENABLE_SPLASH=OFF -DENABLE_UTILS=OFF -DENABLE_LIBOPENJPEG=none . 
-  - make && sudo make install
-  - sudo ldconfig
+  - make 
+  - cp libpoppler.so.?? ../pdfparser/
+  - cp cpp/libpoppler-cpp.so.? ../pdfparser
   - cd ..
   
 install:
-  - sudo pip install cython
-  - POPPLER_ROOT=poppler_src sudo python setup.py install
+  - pip install cython
+  - POPPLER_ROOT=poppler_src sudo python setup.py build_ext --inplace
 # command to run tests
 script:
   - cd tests
