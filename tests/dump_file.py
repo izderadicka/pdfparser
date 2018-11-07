@@ -14,7 +14,8 @@ p.add_argument('--phys-layout', action='store_true', help='Physical Layout - par
 p.add_argument('--fixed-pitch', type=float, default=0.0, help='Fixed pitch - param for text analysis - app. max space size')
 p.add_argument('-q', '--quiet', action='store_true', help='Silence all output from poppler')
 args=p.parse_args()
-d=pdf.Document(bytes(args.document, "UTF-8"), args.phys_layout, args.fixed_pitch, args.quiet)  # @UndefinedVariable
+file_name = args.document if sys.version_info[0] <= 2 else bytes(args.document, "utf-8")
+d=pdf.Document(file_name, args.phys_layout, args.fixed_pitch, args.quiet)  # @UndefinedVariable
 fp=args.first_page or 1
 lp=args.last_page or d.no_of_pages
 print('No of pages', d.no_of_pages)
