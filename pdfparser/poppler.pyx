@@ -337,12 +337,17 @@ cdef class FontInfo:
         unicode name
         double size
         Color color
+        PyBool isbold
+        PyBool isitalic
         
-    def __cinit__(self, unicode name, double size, Color color):
-        nparts=name.split('+',1)
-        self.name=nparts[-1]
+    def __cinit__(self, unicode name, double size, Color color, PyBool isbold, PyBool isitalic):
+        #nparts=name.split('+',1)
+        #self.name=nparts[-1]
+        self.name=name
         self.size=size
         self.color=color
+        self.isbold=isbold
+        self.isitalic=isitalic
         
     property name:
         def __get__(self):
@@ -361,6 +366,18 @@ cdef class FontInfo:
             return self.color
         def __set__(self, Color val):
             self.color=val
+
+    property isbold:
+        def __get__(self):
+            return self.isbold
+        def __set__(self, PyBool val):
+            self.isbold=val
+
+    property isitalic:
+        def __get__(self):
+            return self.isitalic
+        def __set__(self, PyBool val):
+            self.isitalic=val
             
     def __richcmp__(x, y, op):
         if isinstance(x, FontInfo) and isinstance(y, FontInfo) and (op == Py_EQ or op == Py_NE):
@@ -458,6 +475,7 @@ cdef class Line:
             BBox last_bbox 
             FontInfo last_font
             double r,g,b
+            TextFontInfo *textfontinfo
         
         w=self.line.getWords()
         while w:
@@ -475,9 +493,12 @@ cdef class Line:
                 self._bboxes.append(last_bbox)
                 w.getColor(&r, &g, &b)
                 font_name=w.getFontName(i)
+                textfontinfo = w.getFontInfo(i)
                 last_font=FontInfo(font_name.getCString().decode('UTF-8', 'replace') if <unsigned long>font_name != 0 else u"unknown", # In rare cases font name is not UTF-8 or font name is NULL
                                    w.getFontSize(),
-                                   Color(r,g,b)
+                                   Color(r,g,b),
+                                   textfontinfo.isBold(),
+                                   textfontinfo.isItalic()
                                    )
                 self._fonts.append(last_font)
             #and then text as UTF-8 bytes
