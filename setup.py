@@ -67,9 +67,9 @@ def pkgconfig(*packages, **kw):
 def use_poppler_cstring(path):
     for el in path.split(os.path.sep)[::-1]:
         version = el.split('.')
-        if len(version) == 3 and int(version[0]) == 0 and int(version[1]) < 72:
-            return False
-    return True
+        if len(version) == 3 and (int(version[0]) > 0 or int(version[1]) >= 72):
+            return True
+    return False
 
 # Mac OS build fix:
 mac_compile_args = ["-std=c++11", "-stdlib=libc++", "-mmacosx-version-min=10.7"]
