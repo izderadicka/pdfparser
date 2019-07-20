@@ -8,7 +8,7 @@ DEF PRECISION=1e-6
 
 cdef extern from "cpp/poppler-version.h" namespace "poppler":
     cdef string version_string()
-    
+
 def poppler_version():
     return version_string()
 
@@ -20,13 +20,20 @@ cdef extern from "GlobalParams.h":
  # we need to init globalParams - just once during program run
 globalParams = new GlobalParams()
 
-cdef extern from "goo/GooString.h":
-    cdef cppclass GooString:
-        GooString(const char *sA)
-        int getLength()
-        const char *getCString()
-        char getChar(int i)
-
+IF USE_CSTRING:
+    cdef extern from "goo/GooString.h":
+        cdef cppclass GooString:
+            GooString(const char *sA)
+            int getLength()
+            const char *c_str()
+            char getChar(int i)
+ELSE:
+    cdef extern from "goo/GooString.h":
+        cdef cppclass GooString:
+            GooString(const char *sA)
+            int getLength()
+            const char *getCString()
+            char getChar(int i)
 cdef extern from "OutputDev.h":
     cdef cppclass OutputDev:
         pass
@@ -475,7 +482,11 @@ cdef class Line:
                 self._bboxes.append(last_bbox)
                 w.getColor(&r, &g, &b)
                 font_name=w.getFontName(i)
-                last_font=FontInfo(font_name.getCString().decode('UTF-8', 'replace') if <unsigned long>font_name != 0 else u"unknown", # In rare cases font name is not UTF-8 or font name is NULL
+                IF USE_CSTRING:
+                    font_name_cstr = font_name.c_str()
+                ELSE:
+                    font_name_cstr = font_name.getCString()
+                last_font=FontInfo(font_name_cstr.decode('UTF-8', 'replace') if <unsigned long>font_name != 0 else u"unknown", # In rare cases font name is not UTF-8 or font name is NULL
                                    w.getFontSize(),
                                    Color(r,g,b)
                                    )
@@ -483,7 +494,11 @@ cdef class Line:
             #and then text as UTF-8 bytes
             s=w.getText()
             #print s.getCString(), w.getLength(), len(s.getCString())
-            words.append(s.getCString().decode('UTF-8')) # decoded to python unicode string
+            IF USE_CSTRING:
+                s_cstr = s.c_str()
+            ELSE:
+                s_cstr = s.getCString()
+            words.append(s_cstr.decode('UTF-8')) # decoded to python unicode string
             del s
             # must have same ammount of bboxes and characters in word
             assert len(words[-1]) == wlen

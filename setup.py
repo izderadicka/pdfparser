@@ -6,10 +6,11 @@ import subprocess
 import sys
 import re
 
-from setuptools import Extension, setup
+from setuptools import setup
 
 try:
     from Cython.Build import cythonize
+    from Cython.Distutils import Extension, build_ext
 except ImportError:
     print('You need to install cython first - sudo pip install cython', file=sys.stderr)
     sys.exit(1)
@@ -62,6 +63,14 @@ def pkgconfig(*packages, **kw):
             config.setdefault(distutils_key, []).extend([i[n:] for i in items])
     return config
 
+# Poppler 0.72.0+ GooString.h uses c_str() instead of getCString()
+def use_poppler_cstring(path):
+    for el in path.split(os.path.sep)[::-1]:
+        version = el.split('.')
+        if len(version) == 3 and (int(version[0]) > 0 or int(version[1]) >= 72):
+            return True
+    return False
+
 # Mac OS build fix:
 mac_compile_args = ["-std=c++11", "-stdlib=libc++", "-mmacosx-version-min=10.7"]
 POPPLER_ROOT = os.environ.get('POPPLER_ROOT', None)
@@ -72,13 +81,19 @@ if POPPLER_ROOT:
                             include_dirs=[POPPLER_ROOT, os.path.join(POPPLER_ROOT, 'poppler')],
                             library_dirs=[POPPLER_ROOT, POPPLER_CPP_LIB_DIR],
                             runtime_library_dirs=['$ORIGIN'],
-                            libraries=['poppler','poppler-cpp'])
+                            libraries=['poppler','poppler-cpp'],
+                            cython_compile_time_env={'USE_CSTRING': use_poppler_cstring(POPPLER_ROOT)})
     package_data = {'pdfparser': ['*.so.*', 'pdfparser/*.so.*']}
 else:
     poppler_config = pkgconfig("poppler", "poppler-cpp")
     # Mac OS build fix:
     if sys.platform == 'darwin':
         poppler_config.setdefault('extra_compile_args', []).extend(mac_compile_args)
+        poppler_config.setdefault('extra_link_args', []).extend(mac_compile_args)
+
+    poppler_config.setdefault('cython_compile_time_env', {}).update({
+        'USE_CSTRING': use_poppler_cstring(poppler_config['include_dirs'][0])
+    })
     poppler_ext = Extension('pdfparser.poppler', ['pdfparser/poppler.pyx'], language='c++', **poppler_config)
     package_data = {}
 
@@ -86,7 +101,7 @@ else:
 pkg_file= os.path.join(os.path.split(__file__)[0], 'pdfparser', '__init__.py')
 m=re.search(r"__version__\s*=\s*'([\d.]+)'", open(pkg_file).read())
 if not m:
-    print >>sys.stderr, 'Cannot find version of package'
+    print (sys.stderr, 'Cannot find version of package')
     sys.exit(1)
 version= m.group(1)
 
@@ -117,6 +132,8 @@ setup(name='pdfparser',
       packages=['pdfparser', ],
       package_data=package_data,
       include_package_data=True,
-      ext_modules=cythonize([poppler_ext]), # a workaround since Extension is an old-style class
+      cmdclass={"build_ext": build_ext},
+      ext_modules=[poppler_ext], # a workaround since Extension is an old-style class
+                                 # removed cythonize for the list in ext_modules
       zip_safe=False
       )
