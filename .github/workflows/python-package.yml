@@ -1,0 +1,47 @@
+# This workflow will install dependencies, run tests with a variety of Python versions
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: Python build and test
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["2.7","3.6","3.7", "3.8", "3.9"]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        # python -m pip install flake8 pytest
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        sudo apt-get update
+        sudo apt-get install -y libtool pkg-config gettext fontconfig libfontconfig1-dev cmake libzip-dev libjpeg-dev
+        git config --global http.sslVerify "false"
+        git clone --branch poppler-0.62.0 --depth 1 https://anongit.freedesktop.org/git/poppler/poppler.git poppler_src 
+        cd poppler_src/
+        cmake -DENABLE_SPLASH=OFF -DENABLE_UTILS=OFF -DENABLE_LIBOPENJPEG=none . 
+        make 
+        cp libpoppler.so.?? ../pdfparser/
+        cp cpp/libpoppler-cpp.so.? ../pdfparser
+        cd ..
+        pip install cython
+        POPPLER_ROOT=poppler_src python setup.py build_ext --inplace
+    - name: Test on one document
+      run: |
+        cd tests
+        PYTHONPATH=.. python dump_file.py ../test_docs/test1.pdf | grep zasahovat
